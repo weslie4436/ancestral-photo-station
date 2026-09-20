@@ -2380,6 +2380,8 @@
       finding = false;
       selected = [];
       applied = [];
+      lastBoard = { groups: [], job: (lastBoard && lastBoard.job) || {} };
+      paint(lastBoard);
       load();
     },
     showPhoto: function (item) {
