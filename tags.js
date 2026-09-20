@@ -2090,7 +2090,7 @@
       box.addEventListener("click", function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        highlightFace(face.id, face.bbox);
+        highlightFace(face.cover || face.id, face.bbox);
       });
       box.appendChild(cap);
       box.appendChild(x);
@@ -2173,7 +2173,7 @@
         const face = faceBoxes[i];
         const on = !!(
           face &&
-          face.id === id &&
+          (face.id === id || face.cover === id) &&
           (!selectedBBox || sameBBox(face.bbox, selectedBBox))
         );
         el.classList.toggle("is-on", on);
