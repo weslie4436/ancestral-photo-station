@@ -1606,6 +1606,11 @@ button.tag-chip {
 .pswp-face-layer.is-off {
   display: none !important;
 }
+.pswp-face-layer,
+.pswp-face-cube,
+.pswp-face {
+  display: none !important;
+}
 .pswp-face-cube {
   position: absolute;
   top: 64px;

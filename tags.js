@@ -4,6 +4,9 @@
   const DELETE_ID = "media:delete";
   const TEXT_PRE = "text:";
   const QR_ANY = "qr:any";
+  const PEOPLE_SURFACE = false;
+  const GROUP_EVENT_ID = "event:group";
+  const NOPEOPLE_ID = "media:nopeople";
   let findScope = { tag: true, text: true, qr: true };
   const ARROW =
     '<svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="18"/><path d="M15.2 11.5L22.5 18l-7.3 6.5"/></svg>';
@@ -64,6 +67,7 @@
     (lastBoard.groups || []).forEach(function (group) {
       (group.tags || []).forEach(function (tag) {
         if (!tag || !tag.id || seen[tag.id]) return;
+        if (isPeopleTag(tag)) return;
         seen[tag.id] = true;
         out.push(tag);
       });
@@ -82,6 +86,7 @@
   function tagPool(opts) {
     opts = opts || {};
     return allTags().filter(function (tag) {
+      if (isPeopleTag(tag)) return false;
       if (opts.kind && tag.kind !== opts.kind) return false;
       if (opts.exceptId && tag.id === opts.exceptId) return false;
       if (opts.exceptIds && opts.exceptIds[tag.id]) return false;
@@ -134,6 +139,13 @@
 
   function isSearchTok(id) {
     return id === QR_ANY || String(id || "").indexOf(TEXT_PRE) === 0;
+  }
+
+  function isPeopleTag(tag) {
+    if (PEOPLE_SURFACE || !tag) return false;
+    if (tag.kind === "person") return true;
+    const id = String(tag.id || "");
+    return id === GROUP_EVENT_ID || id === NOPEOPLE_ID;
   }
 
   function textTok(q) {
@@ -772,6 +784,7 @@
       paint(lastBoard);
     };
     if (window.FamilyDoor && window.FamilyDoor.layoutStage) window.FamilyDoor.layoutStage();
+    if (!sheetItem) syncFeedIfNeeded();
   }
 
   function load() {
@@ -843,7 +856,7 @@
     host.innerHTML = "";
     (lastBoard.groups || []).forEach(function (group) {
       const available = (group.tags || []).filter(function (tag) {
-        return selected.indexOf(tag.id) < 0;
+        return selected.indexOf(tag.id) < 0 && !isPeopleTag(tag);
       });
       if (!available.length) return;
       const wrap = document.createElement("section");
@@ -1455,7 +1468,9 @@
     card.appendChild(title);
     const row = document.createElement("div");
     row.className = "pswp-tag-row";
-    const photoTags = (data && data.photo && data.photo.tags) || [];
+    const photoTags = ((data && data.photo && data.photo.tags) || []).filter(function (tag) {
+      return !isPeopleTag(tag);
+    });
     const tags = sheetItem && sheetItem.trash
       ? photoTags.filter(function (tag) {
           return tag && tag.id === DELETE_ID;
@@ -1906,10 +1921,8 @@
     form.appendChild(go);
     card.appendChild(form);
     card.appendChild(suggest);
-    const shipped = (data && data.photo && data.photo.faces) || [];
-    // The tag sheet and the face boxes are fetched side by side, so whichever
-    // lands second must not wipe out boxes the other one already drew.
-    if (!keepFaces || shipped.length) paintFaces(shipped);
+    const shipped = PEOPLE_SURFACE ? ((data && data.photo && data.photo.faces) || []) : [];
+    if (PEOPLE_SURFACE && (!keepFaces || shipped.length)) paintFaces(shipped);
     if (selectedTag) highlightFace(selectedTag, selectedBBox);
     else photoAsk();
   }
@@ -2241,35 +2254,16 @@
     node.classList.toggle("is-video", item.kind === "video");
     node.classList.toggle("is-trash-photo", !!item.trash);
     setBoardInert(true);
-    if (item.trash) {
-      if (faceCube) faceCube.hidden = true;
-    } else {
-      hostFaceCube();
-    }
     if (faceCtrl) faceCtrl.abort();
     faceCtrl = new AbortController();
     const ac = faceCtrl;
     const query = photoQuery(item);
-    let drewFaces = false;
-    // Both answers are wanted straight away. Holding the face request until the
-    // tag sheet came back is what left the cubes trailing the photo.
     api("/api/tags?" + query, { signal: ac.signal })
       .then(function (res) {
         return res.json();
       })
       .then(function (data) {
-        if (stillOn(item)) paintSheet(data, drewFaces);
-      })
-      .catch(function () {});
-    if (item.kind === "video" || item.trash) return;
-    api("/api/faces?" + query, { signal: ac.signal })
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        if (!data || !data.faces || !stillOn(item)) return;
-        drewFaces = true;
-        paintFaces(data.faces);
+        if (stillOn(item)) paintSheet(data, true);
       })
       .catch(function () {});
   }
