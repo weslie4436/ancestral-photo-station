@@ -7,13 +7,13 @@ alwaysApply: true
 
 使用者**從不在本機開網頁測試**。驗證一律用 iOS（iPhone／iPad）開 GitHub Pages：
 
-https://theoldfathertw.github.io/ancestral-photo-station/
+https://weslie4436.github.io/ancestral-photo-station/
 
 因此：改任何會出現在這個網址的東西，**沒有 push 就等於沒改**。
 
 ## 必做
 
-- 遠端 `origin` = `https://github.com/TheOldFatherTW/ancestral-photo-station.git`。
+- 遠端 `origin` = `https://github.com/weslie4436/ancestral-photo-station.git`。
 - 一律在 **`main` 上 commit 並 `git push origin main`**。不要開 PR、不要只留本機。
 - 任務結束前就要推，**不必等使用者再說「幫我上傳」**。這專案覆蓋「沒要求就不要 commit」的通用習慣。
 - 改 `app.css`／`*.js` 時一併提高 `index.html` 的 `?v=`，否則 Safari 會繼續用舊快取。

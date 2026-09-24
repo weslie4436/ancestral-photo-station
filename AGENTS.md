@@ -3,7 +3,7 @@
 ## 這是什麼
 
 - **GitHub Pages 門面** + **家裡保險庫**（隧道 origin 寫在 `config.js` 的 `VAULT_ORIGIN`）。
-- 公開網址：https://theoldfathertw.github.io/ancestral-photo-station/
+- 公開網址：https://weslie4436.github.io/ancestral-photo-station/
 - 資料、封面、個人鑰匙不上 Pages；成人／私密內容只走隧道 + 鑰匙。
 
 ## UI 與共用規則
