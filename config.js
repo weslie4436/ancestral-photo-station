@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://affiliation-widely-inspections-elephant.trycloudflare.com";
+window.VAULT_ORIGIN = "https://instructional-spirits-wherever-activation.trycloudflare.com";
