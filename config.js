@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://instructional-spirits-wherever-activation.trycloudflare.com";
+window.VAULT_ORIGIN = "https://laid-mounts-her-fairfield.trycloudflare.com";
