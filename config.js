@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://tournaments-oriental-qualifications-epson.trycloudflare.com";
+window.VAULT_ORIGIN = "https://contests-parts-chat-forums.trycloudflare.com";
