@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://contests-parts-chat-forums.trycloudflare.com";
+window.VAULT_ORIGIN = "https://sending-largest-sunny-worked.trycloudflare.com";
