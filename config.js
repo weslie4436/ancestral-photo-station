@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://sending-largest-sunny-worked.trycloudflare.com";
+window.VAULT_ORIGIN = "https://finest-pac-ask-ordinance.trycloudflare.com";
