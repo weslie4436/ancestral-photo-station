@@ -41,7 +41,9 @@
 | `hey.html` | 邀請入口頁 |
 | `index.html` | 個人相簿主頁 |
 | `gate.js` | 入口 gate + FamiphotoGate（invite／Apple MFA） |
+| `drive.js` | 隨身碟模式：選 Famiphoto 資料夾、本機相簿源 |
 | `door.js` | 個人頁／相簿邏輯 |
 | `tags.js` | 標籤列 + 鍵盤 |
 | `app.css` | 專案色票與殼 |
 | `config.js` | `VAULT_ORIGIN`（不上 Pages 的隧道位址由部署環境維護） |
+| `backup.shortcut` | iOS 捷徑：把新照片存進隨身碟 |

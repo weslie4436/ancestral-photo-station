@@ -141,6 +141,8 @@
     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.4" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.2 18.6c.9-3.3 3.2-5 5.8-5s4.9 1.7 5.8 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
   const HEART =
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20C10.5 18.4 7.3 15.8 5.4 11.9C4 9.1 5.2 6 8.4 6c1.8 0 3 1.1 3.6 2.2C12.6 7.1 13.8 6 15.6 6c3.2 0 4.4 3.1 3 5.9C16.7 15.8 13.5 18.4 12 20Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
+  const STICK =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 12h.01M12 12h.01M16 12h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
   let waitBusy = false;
   let waitTimer = 0;
 
@@ -149,6 +151,13 @@
     const k = window.FAMILY_VIEW_KEY;
     if (!k) return url;
     return url + (path.indexOf("?") >= 0 ? "&" : "?") + "k=" + encodeURIComponent(k);
+  }
+
+  function call(path, opts) {
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      return window.FamilyDrive.request(path, opts);
+    }
+    return fetch(api(path), opts || {});
   }
 
   function lineFrom(data) {
@@ -162,7 +171,7 @@
       ctrl.abort();
     }, 20000);
     try {
-      const res = await fetch(api(path), { signal: ctrl.signal });
+      const res = await call(path, { signal: ctrl.signal });
       if (res.status === 401 || res.status === 403) {
         const err = new Error("need_key");
         err.code = "need_key";
@@ -263,6 +272,27 @@
 
   function paintStage(reader) {
     if (!stageBg || !hall) return;
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      const url = window.FamilyDrive.backdropUrl();
+      if (url) {
+        backdropUrl = url;
+        hall.classList.add("has-backdrop");
+        if (readerName) {
+          readerName.classList.remove("is-on-light");
+          readerName.classList.add("is-on-dark");
+        }
+        stageBg.style.backgroundImage = "url(" + backdropUrl + ")";
+        stageBg.hidden = false;
+        requestAnimationFrame(layoutStage);
+      } else {
+        backdropUrl = "";
+        hall.classList.remove("has-backdrop");
+        if (readerName) readerName.classList.remove("is-on-light", "is-on-dark");
+        stageBg.hidden = true;
+        stageBg.style.backgroundImage = "";
+      }
+      return;
+    }
     if (reader && reader.has_backdrop && reader.id) {
       backdropUrl = api("/backdrop?person=" + encodeURIComponent(reader.id) + "&r=" + (reader.backdrop_rev || 0));
       hall.classList.add("has-backdrop");
@@ -286,11 +316,12 @@
     if (!p) return;
     if (readerName) readerName.textContent = p.display_name || "";
     if (faceImg) {
-      if (p.has_cover) {
-        faceImg.alt = p.display_name || "";
+      faceImg.alt = p.display_name || "";
+      if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+        faceImg.src = window.FamilyDrive.coverUrl() || "./face-default.jpg?v=2";
+      } else if (p.has_cover) {
         faceImg.src = api("/cover?person=" + encodeURIComponent(p.id) + "&v=" + (p.cover_rev || 0));
       } else {
-        faceImg.alt = p.display_name || "";
         faceImg.src = "./face-default.jpg?v=2";
       }
       faceImg.hidden = false;
@@ -830,9 +861,18 @@
     );
     menu.appendChild(
       entry(UPLOAD, "備份本機照片", function () {
+        if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+          window.FamilyDrive.runBackup();
+          return;
+        }
         const pid = wrap.dataset.person || openPerson;
         if (pid) pickUpload(pid);
       }, "local")
+    );
+    menu.appendChild(
+      entry(STICK, "打開隨身碟", function () {
+        if (window.FamilyDrive && window.FamilyDrive.pick) window.FamilyDrive.pick();
+      }, "drive")
     );
     menu.appendChild(
       entry(CAMERA, "更換大頭照", function () {
@@ -906,6 +946,17 @@
     wrap.hidden = !on;
     if (!on) closeSettings();
     paintIdentityRow();
+    paintDriveGear();
+  }
+
+  function paintDriveGear() {
+    const driveOn = !!(window.FamilyDrive && window.FamilyDrive.isOn());
+    const menu = document.querySelector(".settings-menu");
+    if (!menu) return;
+    ["icloud", "cover", "backdrop"].forEach(function (job) {
+      const row = menu.querySelector('[data-job="' + job + '"]');
+      if (row) row.hidden = driveOn;
+    });
   }
 
   function bindCastTrash(btn) {
@@ -1136,26 +1187,36 @@
     );
   }
 
+  function applyDrive(p) {
+    if (!p || !p.id) return;
+    names[p.id] = p.display_name;
+    latestPeople[p.id] = p;
+    if (openPerson === p.id) openPerson = "";
+    lastCab = "drive:" + p.id;
+    if (window.FamilyDrive && window.FamilyDrive.hidePick) window.FamilyDrive.hidePick();
+    endBoot();
+    showAlbum(p.id, p.display_name);
+    paintDriveGear();
+  }
+
   async function boot() {
-    if (!ORIGIN) {
-      fail(DISCONNECTED);
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      if (!openPerson) applyDrive(window.FamilyDrive.cabinet());
       return;
     }
-    if (!window.FAMILY_VIEW_KEY) {
-      fail(
-        window.navigator.standalone
-          ? "請刪掉圖示，用 Safari 打開專用連結後再加入"
-          : NEED_LINK
-      );
+    if (window.FamilyDrive && window.FamilyDrive.showPick) window.FamilyDrive.showPick();
+    if (!ORIGIN || !window.FAMILY_VIEW_KEY) {
       lastCab = "";
       return;
     }
     try {
       const pub = await readJson("/api/public");
+      if (window.FamilyDrive && window.FamilyDrive.isOn()) return;
       if (statusEl) {
         statusEl.textContent = isBooting() ? "正在打開相簿…" : lineFrom(pub);
       }
       const cab = await readJson("/api/cabinets");
+      if (window.FamilyDrive && window.FamilyDrive.isOn()) return;
       names = {};
       latestPeople = {};
       (cab.people || []).forEach(function (p) {
@@ -1175,15 +1236,13 @@
       window._familyTagging = (cab.people || []).some(function (p) {
         return p.tag && p.tag.state === "running";
       });
+      if (window.FamilyDrive && window.FamilyDrive.hidePick) window.FamilyDrive.hidePick();
       endBoot();
     } catch (err) {
-      if (err && err.code === "need_key") {
-        fail(NEED_LINK);
-        return;
-      }
-      if (lastCab) return;
-      fail(DISCONNECTED);
+      if (lastCab && lastCab.indexOf("drive:") !== 0) return;
+      if (window.FamilyDrive && window.FamilyDrive.showPick) window.FamilyDrive.showPick();
     }
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) return;
     route();
   }
 
@@ -1301,6 +1360,9 @@
       boot();
       startPoll();
     },
+    onDrive: function (p) {
+      applyDrive(p);
+    },
     setSelect: function (count, inTrash, hint) {
       const n = Number(count) || 0;
       if (inTrash) selectLine = "正在看垃圾桶";
@@ -1351,13 +1413,16 @@
     (function poll() {
       const wait = uploadWork || window._familyRunning || window._familyTagging ? 3000 : 12000;
       setTimeout(function () {
-        if (!ORIGIN) {
+        if ((window.FamilyDrive && window.FamilyDrive.isOn()) || !ORIGIN) {
           poll();
           return;
         }
         Promise.resolve(boot()).then(poll);
       }, wait);
     })();
+  }
+  if (window.FamilyDrive && window.FamilyDrive.showPick && !window.FAMILY_FORCE_INVITE) {
+    window.FamilyDrive.showPick();
   }
   if (window.FamiphotoGate) {
     window.FamiphotoGate.start();

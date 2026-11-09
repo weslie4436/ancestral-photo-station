@@ -88,12 +88,13 @@
   <div class="profile">
     <div class="rose-two" id="rose-two"></div>
     <h1 class="brand">Famiphoto</h1>
-    <p class="status" id="status">正在連接備份硬碟…</p>
+    <p class="status" id="status"></p>
   </div>
   <div class="invite-panel" id="invite-panel" hidden>
     <p class="invite-hey" id="invite-hey">Hey! 開始備份你的照片</p>
     <p class="invite-safari" id="invite-safari" hidden>請用 Safari 打開</p>
     <button type="button" class="invite-go" id="invite-go">開始備份</button>
+    <button type="button" class="invite-go" id="drive-go" hidden>打開隨身碟</button>
     <form id="invite-apple-form" hidden>
       <p class="err" id="invite-apple-err"></p>
       <label for="invite-apple">Apple ID</label>
@@ -160,6 +161,7 @@
 <aside class="photo-rail" id="photo-rail" hidden aria-label="照片操作"></aside>
 <input id="cover-input" type="file" accept="image/*" hidden/>
 <input id="backdrop-input" type="file" accept="image/*" hidden/>
+<input id="drive-input" type="file" webkitdirectory directory multiple hidden/>
 <div class="batch-tag-mask" id="waitMask" hidden>
   <div class="batch-tag-sheet is-wait" id="waitSheet">
     <div class="batch-tag-head">
@@ -176,10 +178,11 @@
 <script src="./vendor/photoswipe/photoswipe.umd.min.js"></script>
 <script src="./vendor/photoswipe/photoswipe-lightbox.umd.min.js"></script>
 <script src="./rose-two.js?v=22"></script>
-<script src="./gallery.js?v=70"></script>
-<script src="./tags.js?v=85"></script>
-<script src="./gate.js?v=14"></script>
-<script src="./door.js?v=75"></script>
+<script src="./gallery.js?v=71"></script>
+<script src="./tags.js?v=86"></script>
+<script src="./drive.js?v=1"></script>
+<script src="./gate.js?v=15"></script>
+<script src="./door.js?v=76"></script>
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js?v=45");

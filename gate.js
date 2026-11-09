@@ -33,6 +33,7 @@
   const hey = document.getElementById("invite-hey");
   const safariNote = document.getElementById("invite-safari");
   const goBtn = document.getElementById("invite-go");
+  const driveBtn = document.getElementById("drive-go");
   const appleForm = document.getElementById("invite-apple-form");
   const passForm = document.getElementById("invite-pass-form");
   const mfaForm = document.getElementById("invite-mfa");
@@ -198,6 +199,7 @@
     if (hey) hey.hidden = true;
     if (safariNote) safariNote.hidden = true;
     if (goBtn) goBtn.hidden = true;
+    if (driveBtn) driveBtn.hidden = true;
     if (appleForm) appleForm.hidden = true;
     if (passForm) passForm.hidden = true;
     if (mfaForm) mfaForm.hidden = true;

@@ -43,6 +43,9 @@
   let feedNeedsSync = false;
 
   function api(path, opts) {
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      return window.FamilyDrive.request(path, opts);
+    }
     const origin = (window.VAULT_ORIGIN || "").replace(/\/$/, "");
     const k = window.FAMILY_VIEW_KEY;
     let url = origin + path;

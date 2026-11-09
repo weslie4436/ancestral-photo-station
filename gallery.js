@@ -125,6 +125,13 @@
     return url + (path.indexOf("?") >= 0 ? "&" : "?") + "k=" + encodeURIComponent(k);
   }
 
+  function call(path, opts) {
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      return window.FamilyDrive.request(path, opts);
+    }
+    return fetch(api(path), opts || {});
+  }
+
   function thumbsBusy() {
     return thumbActive > 0 || thumbWait.length > 0;
   }
@@ -373,7 +380,7 @@
         function settle() {
           if (done) done();
         }
-        fetch(url, { mode: "cors", credentials: "omit" })
+        fetch(url, url.indexOf("blob:") === 0 ? {} : { mode: "cors", credentials: "omit" })
           .then(function (res) {
             if (!res.ok) throw new Error("bad");
             return res.blob();
@@ -414,6 +421,9 @@
   }
 
   function qs(item, kind, size) {
+    if (window.FamilyDrive && window.FamilyDrive.isOn()) {
+      return window.FamilyDrive.mediaUrl(item, kind === "full" ? "media" : kind, size);
+    }
     const p = new URLSearchParams({
       person: item.person,
       bucket: item.bucket,
@@ -703,7 +713,7 @@
   }
 
   function folderPost(body) {
-    return fetch(api("/api/folders"), {
+    return call("/api/folders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(Object.assign({ person: currentPerson }, body)),
@@ -881,7 +891,7 @@
     afterThumbs = function () {};
     paintHint = function () {};
     tellSelect();
-    fetch(api("/api/folders?person=" + encodeURIComponent(person)))
+    call("/api/folders?person=" + encodeURIComponent(person))
       .then(function (res) {
         if (!res.ok) throw new Error("bad");
         return res.json();
@@ -1038,7 +1048,7 @@
 
   function tagPost(body) {
     if (window.FamilyTags && window.FamilyTags.act) return window.FamilyTags.act(body);
-    return fetch(api("/api/tags"), {
+    return call("/api/tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -1719,7 +1729,7 @@
         if (my !== run) return;
         headBusy = true;
         try {
-          const res = await fetch(api(photosPath(person, 0, FIRST, trashMode, favMode)));
+          const res = await call(photosPath(person, 0, FIRST, trashMode, favMode));
           const data = await res.json();
           if (my !== run) return;
           total = data.total;
@@ -1746,10 +1756,9 @@
         loading = true;
         showHint();
         try {
-          const url = api(
+          const res = await call(
             photosPath(person, offset, offset ? LIMIT : FIRST, trashMode, favMode)
           );
-          const res = await fetch(url);
           const data = await res.json();
           if (my !== run) return;
           total = data.total;
@@ -1990,7 +1999,7 @@
       }
       const items = targetItems();
       const allOn = items.every(function (it) { return it.favorite; });
-      return fetch(api("/api/favorite"), {
+      return call("/api/favorite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ on: !allOn, photos: rows, person: currentPerson }),
