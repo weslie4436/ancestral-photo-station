@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://finest-pac-ask-ordinance.trycloudflare.com";
+window.VAULT_ORIGIN = "https://bacteria-reliable-bibliography-chips.trycloudflare.com";
