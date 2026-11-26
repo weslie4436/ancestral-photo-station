@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://october-arrange-putting-nissan.trycloudflare.com";
+window.VAULT_ORIGIN = "https://sherman-amendment-syntax-solomon.trycloudflare.com";
