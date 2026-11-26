@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://trailers-manga-columbus-progressive.trycloudflare.com";
+window.VAULT_ORIGIN = "https://seasons-walter-capture-prepare.trycloudflare.com";
