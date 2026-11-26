@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://sherman-amendment-syntax-solomon.trycloudflare.com";
+window.VAULT_ORIGIN = "https://trailers-manga-columbus-progressive.trycloudflare.com";
