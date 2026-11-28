@@ -1,1 +1,1 @@
-window.VAULT_ORIGIN = "https://commented-races-coordinate-alignment.trycloudflare.com";
+window.VAULT_ORIGIN = "https://goat-dim-sisters-fingers.trycloudflare.com";
